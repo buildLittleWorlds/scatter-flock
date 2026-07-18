@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nobody is in charge of the murmuration</title>
+<style>
+  :root{
+    --ink:#101820;
+    --dusk:#1b2733;
+    --sky:#e8ede8;
+    --dot:#2a3b2e;
+    --live:#c86b3c;
+    --line:#b9c2b6;
+    --mute:#5a6b5c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--sky);
+    color:var(--ink);
+    font-family:Georgia,'Times New Roman',serif;
+    line-height:1.55;
+    padding:clamp(1.2rem,4vw,3rem);
+    max-width:760px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    font-family:'Courier New',monospace;
+    font-size:.72rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--mute);
+    margin-bottom:1rem;
+  }
+  h1{
+    font-size:clamp(1.7rem,5.2vw,2.7rem);
+    line-height:1.15;
+    font-weight:normal;
+    letter-spacing:-.01em;
+    margin-bottom:.8rem;
+  }
+  .stand{
+    font-style:italic;
+    color:var(--dusk);
+    font-size:1.05rem;
+    margin-bottom:2rem;
+    max-width:56ch;
+  }
+  .stage{
+    position:relative;
+    border:1px solid var(--line);
+    background:var(--ink);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  canvas{display:block;width:100%;height:auto;touch-action:none}
+  .task{
+    margin:1.6rem 0 .4rem;
+    font-size:1.15rem;
+    display:flex;
+    gap:.6rem;
+    align-items:baseline;
+  }
+  .task .n{
+    font-family:'Courier New',monospace;
+    color:var(--live);
+    font-size:.85rem;
+    letter-spacing:.1em;
+    flex:none;
+  }
+  .controls{
+    display:grid;
+    gap:1.1rem;
+    margin:1.4rem 0 .5rem;
+  }
+  .ctrl label{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-family:'Courier New',monospace;
+    font-size:.78rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--mute);
+    margin-bottom:.35rem;
+  }
+  .ctrl .val{color:var(--dusk)}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;height:2px;background:var(--line);
+    outline:none;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:18px;height:18px;border-radius:50%;
+    background:var(--live);border:3px solid var(--sky);
+    box-shadow:0 0 0 1px var(--live);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:18px;height:18px;border-radius:50%;
+    background:var(--live);border:3px solid var(--sky);
+    box-shadow:0 0 0 1px var(--live);
+  }
+  .btnrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.3rem}
+  button{
+    font-family:'Courier New',monospace;
+    font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;
+    background:transparent;color:var(--dusk);
+    border:1px solid var(--line);border-radius:2px;
+    padding:.55rem 1rem;cursor:pointer;transition:all .15s;
+  }
+  button:hover,button:focus-visible{border-color:var(--live);color:var(--live)}
+  .notice{
+    border-left:2px solid var(--live);
+    padding:.2rem 0 .2rem 1.1rem;
+    margin:2.2rem 0 1.4rem;
+    font-size:.98rem;
+    color:var(--dusk);
+  }
+  .notice h2{
+    font-family:'Courier New',monospace;
+    font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--mute);font-weight:normal;margin-bottom:.5rem;
+  }
+  .honest{
+    border-top:1px solid var(--line);
+    margin-top:2.4rem;padding-top:1.4rem;
+    font-size:.92rem;color:var(--mute);
+  }
+  .honest h2{
+    font-family:'Courier New',monospace;
+    font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+    margin-bottom:.7rem;color:var(--dusk);font-weight:normal;
+  }
+  .honest p{margin-bottom:.7rem}
+  .honest .real{color:var(--dusk)}
+  .honest .fake{color:var(--mute)}
+  @media (prefers-reduced-motion:reduce){
+    input[type=range]::-webkit-slider-thumb{transition:none}
+  }
+</style>
+</head>
+<body>
+  <p class="eyebrow">A paper you can poke</p>
+  <h1>Nobody is in charge of the murmuration</h1>
+  <p class="stand">A thousand starlings, no choreographer. Three little local rules&mdash;keep apart, line up, stay close&mdash;and the sky gets a dance nobody designed.</p>
+
+  <div class="stage">
+    <canvas id="c" width="720" height="440" aria-label="A flock of dots moving on a dark canvas"></canvas>
+  </div>
+
+  <p class="task"><span class="n">DO&nbsp;THIS</span><span>Move the three sliders until the flock looks <em>most alive</em>&mdash;then break it and rebuild it. There&rsquo;s no correct setting. You&rsquo;re tuning, not solving.</span></p>
+
+  <div class="controls">
+    <div class="ctrl">
+      <label for="sep">Separation <span class="val" id="sepv"></span></label>
+      <input type="range" id="sep" min="0" max="2" step="0.01" value="1.1">
+    </div>
+    <div class="ctrl">
+      <label for="ali">Alignment <span class="val" id="aliv"></span></label>
+      <input type="range" id="ali" min="0" max="2" step="0.01" value="1.0">
+    </div>
+    <div class="ctrl">
+      <label for="coh">Cohesion <span class="val" id="cohv"></span></label>
+      <input type="range" id="coh" min="0" max="2" step="0.01" value="0.9">
+    </div>
+    <div class="btnrow">
+      <button id="scatter">Scatter the flock</button>
+      <button id="reset">Reset sliders</button>
+    </div>
+  </div>
+
+  <div class="notice">
+    <h2>What to notice</h2>
+    <p>No single dot leads. A &ldquo;leader&rdquo; at the front is just whichever dot happens to be there this second&mdash;a moment later it&rsquo;s buried in the middle. The shape you see isn&rsquo;t stored anywhere; it&rsquo;s re-computed from scratch every frame out of neighbors reacting to neighbors.</p>
+  </div>
+
+  <div class="honest">
+    <h2>What this really shows vs. only suggests</h2>
+    <p class="real"><strong>Really shows:</strong> local rules with no central plan can produce coordinated global order. That much is genuine&mdash;every dot here only ever looks at the handful of others near it, and the flock is real emergence, not a scripted animation.</p>
+    <p class="fake"><strong>Only suggests:</strong> that this is <em>how starlings do it.</em> Real birds track a fixed number of nearest neighbors (about seven) rather than everything inside a radius, and a lot of a murmuration&rsquo;s drama is predator-dodging, not just the three rules. This is a cartoon of the idea, not a model of the animal.</p>
+    <p><strong>The hint worth keeping:</strong> the same trick&mdash;order out of nobody-in-charge&mdash;shows up far from birds. Traffic jams form and dissolve with no lead car. Applause in a hall syncs with no conductor. A crowd leaving a stadium threads the exits with no floor plan. Whenever a big smooth pattern appears and you go looking for who&rsquo;s running it, it&rsquo;s worth asking whether anyone is&mdash;or whether it&rsquo;s just neighbors, reacting to neighbors, all the way down.</p>
+  </div>
+
+<script>
+(function(){
+  const canvas=document.getElementById('c');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+
+  const sepS=document.getElementById('sep'),
+        aliS=document.getElementById('ali'),
+        cohS=document.getElementById('coh');
+  const sepV=document.getElementById('sepv'),
+        aliV=document.getElementById('aliv'),
+        cohV=document.getElementById('cohv');
+
+  const DEF={sep:1.1,ali:1.0,coh:0.9};
+  const N=120, R=42, RSEP=20, MAX=2.6, MINSP=1.1;
+
+  const boids=[];
+  function seed(){
+    boids.length=0;
+    for(let i=0;i<N;i++){
+      const a=Math.random()*Math.PI*2;
+      boids.push({x:Math.random()*W,y:Math.random()*H,
+                  vx:Math.cos(a)*2,vy:Math.sin(a)*2});
+    }
+  }
+  seed();
+
+  function updLabels(){
+    sepV.textContent=(+sepS.value).toFixed(2);
+    aliV.textContent=(+aliS.value).toFixed(2);
+    cohV.textContent=(+cohS.value).toFixed(2);
+  }
+  [sepS,aliS,cohS].forEach(s=>s.addEventListener('input',updLabels));
+  updLabels();
+
+  document.getElementById('scatter').onclick=()=>{
+    for(const b of boids){
+      const a=Math.random()*Math.PI*2, sp=6+Math.random()*4;
+      b.vx=Math.cos(a)*sp; b.vy=Math.sin(a)*sp;
+    }
+  };
+  document.getElementById('reset').onclick=()=>{
+    sepS.value=DEF.sep; aliS.value=DEF.ali; cohS.value=DEF.coh; updLabels();
+  };
+
+  function step(){
+    const wSep=+sepS.value, wAli=+aliS.value, wCoh=+cohS.value;
+    for(const b of boids){
+      let cx=0,cy=0, ax=0,ay=0, sx=0,sy=0, n=0, ns=0;
+      for(const o of boids){
+        if(o===b) continue;
+        const dx=o.x-b.x, dy=o.y-b.y;
+        const d2=dx*dx+dy*dy;
+        if(d2<R*R){
+          cx+=o.x; cy+=o.y; ax+=o.vx; ay+=o.vy; n++;
+          if(d2<RSEP*RSEP && d2>0){
+            const d=Math.sqrt(d2);
+            sx-=dx/d; sy-=dy/d; ns++;
+          }
+        }
+      }
+      if(n>0){
+        // cohesion
+        b.vx+=((cx/n-b.x)*0.0009)*wCoh;
+        b.vy+=((cy/n-b.y)*0.0009)*wCoh;
+        // alignment
+        b.vx+=((ax/n-b.vx)*0.04)*wAli;
+        b.vy+=((ay/n-b.vy)*0.04)*wAli;
+      }
+      if(ns>0){
+        b.vx+=(sx/ns)*0.15*wSep;
+        b.vy+=(sy/ns)*0.15*wSep;
+      }
+      // speed clamp
+      let sp=Math.hypot(b.vx,b.vy);
+      if(sp>MAX){b.vx=b.vx/sp*MAX; b.vy=b.vy/sp*MAX;}
+      else if(sp<MINSP && sp>0){b.vx=b.vx/sp*MINSP; b.vy=b.vy/sp*MINSP;}
+      b.x+=b.vx; b.y+=b.vy;
+      // wrap
+      if(b.x<0)b.x+=W; if(b.x>W)b.x-=W;
+      if(b.y<0)b.y+=H; if(b.y>H)b.y-=H;
+    }
+  }
+
+  function draw(){
+    ctx.fillStyle='#101820';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#dfe6dd';
+    for(const b of boids){
+      const a=Math.atan2(b.vy,b.vx);
+      ctx.save();
+      ctx.translate(b.x,b.y);
+      ctx.rotate(a);
+      ctx.beginPath();
+      ctx.moveTo(4,0); ctx.lineTo(-3,2.2); ctx.lineTo(-3,-2.2);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function loop(){ step(); draw(); requestAnimationFrame(loop); }
+  if(reduce){ step(); draw(); } else { loop(); }
+})();
+</script>
+</body>
+</html>
